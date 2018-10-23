@@ -1,1 +1,1 @@
-from . import general
+from .settings_general import *
