@@ -1,0 +1,5 @@
+Django==2.1.2
+django-filter==2.0.0
+djangorestframework==3.9.0
+pykafka==2.8.0
+mod-wsgi==4.6.5
