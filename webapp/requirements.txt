@@ -4,12 +4,25 @@
 #
 #    pip-compile --output-file requirements.txt requirements.in
 #
+amqp==2.3.2               # via kombu
+babel==2.6.0              # via flower
+billiard==3.5.0.4         # via celery
+celery==4.2.0
+certifi==2018.10.15       # via requests
+chardet==3.0.4            # via requests
 django-filter==2.0.0
 django==2.1.2
 djangorestframework==3.9.0
+flower==0.9.2
+idna==2.7                 # via requests
 kazoo==2.5.0              # via pykafka
-# mod-wsgi==4.6.5
+kombu==4.2.1              # via celery
 pykafka==2.8.0
-pytz==2018.5              # via django
+pytz==2018.5              # via babel, celery, django, flower
+redis==2.10.6
+requests==2.20.0
 six==1.11.0               # via kazoo, pykafka
 tabulate==0.8.2           # via pykafka
+tornado==5.1.1            # via flower
+urllib3==1.24.1           # via requests
+vine==1.1.4               # via amqp

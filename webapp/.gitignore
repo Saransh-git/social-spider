@@ -1,2 +1,4 @@
 *.py[c]
 */_pycache_/
+celerybeat-schedule
+.idea

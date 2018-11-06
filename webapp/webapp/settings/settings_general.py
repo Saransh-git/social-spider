@@ -25,7 +25,7 @@ SECRET_KEY = '5-4_2x4q+c)&ucl%158zpt!tj8w-+zfk6o%oll896ot^bb(8an'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['socialspider.azurewebsites.net']
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
 
-    'twitter'
+    'twitter',
+    'daemon'
 ]
 
 MIDDLEWARE = [

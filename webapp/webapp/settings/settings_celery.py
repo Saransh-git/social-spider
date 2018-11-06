@@ -1,0 +1,11 @@
+from celery.schedules import crontab
+
+CELERY_BROKER_URL = 'redis://localhost:6379'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379'
+CELERY_TASK_SOFT_TIME_LIMIT = 600
+CELERY_TASK_TIME_LIMIT = 720
+CELERY_WORKER_MAX_TASKS_PER_CHILD = 500
+
+CELERY_BEAT_SCHEDULE = {
+
+}
