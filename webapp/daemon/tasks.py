@@ -3,12 +3,17 @@ import json
 import requests
 
 from twitter.task import tweet_preprocessing
-from celery import task
+from celery import task, Task
 
 from utils.oauth import generate_oauth_authorization_header
 
 
-@task
+class DaemonTask(Task):
+    time_limit = None
+    soft_time_limit = None  # explicitly set these limits so that the process doesn't stop.
+
+
+@task(base=DaemonTask)
 def call_twitter_stream():
     url = "https://stream.twitter.com/1.1/statuses/filter.json"
     data = {'track': '@Amazon'}
@@ -27,8 +32,4 @@ call_twitter_stream()
 
 # handle exceptions
 # Log exception: look how to place loggers inside a celery task/ normal python logger
-
-
-
-
 
