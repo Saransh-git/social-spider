@@ -75,26 +75,39 @@ def tweet_preprocessing(tweet_data):
         if tweet_data["text"].startswith("RT"):
             if tweet_data["retweeted_status"].get("extended_tweet"):
                 tweet_text = tweet_data["retweeted_status"]["extended_tweet"]['full_text']
+                tweet_hashtags = [item["text"] for item in
+                                  tweet_data["retweeted_status"]["extended_tweet"]["entities"]['hashtags']]
+                tweet_usermentions = [item["screen_name"] for item in
+                                      tweet_data["retweeted_status"]["extended_tweet"]["entities"]['user_mentions']]
             else:
                 tweet_text = tweet_data["retweeted_status"]["text"]
+                tweet_hashtags = [item["text"] for item in tweet_data["retweeted_status"]["entities"]['hashtags']]
+                tweet_usermentions = [item["screen_name"] for item in tweet_data["retweeted_status"]["entities"]['user_mentions']]
 
         elif tweet_data["is_quote_status"]:
             if tweet_data["quoted_status"].get("extended_tweet"):
                 tweet_text = tweet_data["quoted_status"]["extended_tweet"]['full_text']
+                tweet_hashtags = [item["text"] for item in
+                                  tweet_data["quoted_status"]["extended_tweet"]["entities"]['hashtags']]
+                tweet_usermentions = [item["screen_name"] for item in
+                                      tweet_data["quoted_status"]["extended_tweet"]["entities"]['user_mentions']]
             else:
                 tweet_text = tweet_data["quoted_status"]["text"]
-
+                tweet_hashtags = [item["text"] for item in tweet_data["quoted_status"]["entities"]['hashtags']]
+                tweet_usermentions = [item["screen_name"] for item in tweet_data["quoted_status"]["entities"]['user_mentions']]
         else:
             if tweet_data.get("extended_tweet"):
                 tweet_text = tweet_data["extended_tweet"]['full_text']
+                tweet_hashtags = [item["text"] for item in tweet_data["extended_tweet"]["entities"]['hashtags']]
+                tweet_usermentions = [item["screen_name"] for item in tweet_data["extended_tweet"]["entities"]['user_mentions']]
             else:
                 tweet_text = tweet_data["text"]
+                tweet_hashtags = [item["text"] for item in tweet_data["entities"]['hashtags']]
+                tweet_usermentions = [item["screen_name"] for item in tweet_data["entities"]['user_mentions']]
 
         tweet_id = tweet_data["id"]
         tweet_user_id = tweet_data["user"]['id']
         tweet_user_name = tweet_data["user"]['name']
-        tweet_hashtags = [item["text"] for item in tweet_data["entities"]['hashtags']]
-        tweet_usermentions = [item["screen_name"] for item in tweet_data["entities"]['user_mentions']]
         tweet_timestamp = tweet_data["timestamp_ms"]  # convert in utc if required for cassandra/hbase
 
         tweet_data_list = replicate_tweet_data_for_hashtags_and_user_mentions({
@@ -109,5 +122,3 @@ def tweet_preprocessing(tweet_data):
 
         for tweet_data in tweet_data_list:
             send_tweet_data_to_kafka.delay(tweet_data)
-
-

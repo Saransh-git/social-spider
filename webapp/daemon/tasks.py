@@ -29,3 +29,4 @@ def call_twitter_stream():
                 tweet_preprocessing.delay(json.loads(decoded_line))
             except JSONDecodeError:
                 pass  # never mind, this might be a system message
+
