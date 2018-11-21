@@ -1,8 +1,9 @@
 import json
+from json import JSONDecodeError
 
 import requests
 
-from twitter.task import tweet_preprocessing
+from twitter.tasks import tweet_preprocessing
 from celery import task, Task
 
 from utils.oauth import generate_oauth_authorization_header
@@ -16,7 +17,7 @@ class DaemonTask(Task):
 @task(base=DaemonTask)
 def call_twitter_stream():
     url = "https://stream.twitter.com/1.1/statuses/filter.json"
-    data = {'track': '@Amazon'}
+    data = {'track': '@Amazon,@Walmart,@Google'}
     r = requests.post(url, data=data, headers={'Authorization': generate_oauth_authorization_header(url, 'POST', data)},
                       stream=True)
 
@@ -24,12 +25,7 @@ def call_twitter_stream():
         # filter out keep-alive new lines
         if line:
             decoded_line = line.decode('utf-8')
-            tweet_preprocessing.delay(json.loads(decoded_line))
-
-
-call_twitter_stream()
-
-
-# handle exceptions
-# Log exception: look how to place loggers inside a celery task/ normal python logger
-
+            try:
+                tweet_preprocessing.delay(json.loads(decoded_line))
+            except JSONDecodeError:
+                pass  # never mind, this might be a system message
