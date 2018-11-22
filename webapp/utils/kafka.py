@@ -1,9 +1,12 @@
 from pykafka import KafkaClient, Topic
+from django.conf import settings
 
 
 class Client:  # do not instantiate this client here so as to prevent SocketDisconnectedError
     def __init__(self):
-        self.client = KafkaClient(hosts="sandbox-hdp.hortonworks.com:6667")  # fail loudly if unable to connect to a host
+        self.client = KafkaClient(
+            hosts=f"{settings.KAFKA_HOST}:{settings.KAFKA_PORT}")  # fail loudly if
+        # unable to connect to a host
 
     def send(self, topic, msg):
         """
