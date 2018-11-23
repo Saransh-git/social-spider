@@ -17,6 +17,10 @@ services:
     build:
       context: .
     command: celery -A webapp worker -B -E -l info --concurrency=2 -Q daemon -Ofair -E
+  celeryworkerdataeng:
+    build:
+      context: .
+    command: celery -A webapp worker -B -E -l info --concurrency=3 -Q dataeng -Ofair -E
   flower:
     build:
       context: .

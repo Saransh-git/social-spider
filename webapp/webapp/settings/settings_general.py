@@ -40,7 +40,9 @@ INSTALLED_APPS = [
     'rest_framework',
 
     'twitter',
-    'daemon'
+    'daemon',
+    'spark',
+    'cassandra'
 ]
 
 MIDDLEWARE = [

@@ -2,6 +2,7 @@ import json
 
 import requests
 from django.conf import settings
+from rest_framework.status import HTTP_404_NOT_FOUND
 
 from utils.redis import rredis as redis
 
@@ -37,6 +38,8 @@ class LivyClient:
         else:
             active_livy_session_id = active_livy_session_id.decode()
             r = requests.get(f'{self.url}/sessions/{active_livy_session_id}/state', headers=self.headers)
+            if r.status_code == HTTP_404_NOT_FOUND:
+                return self.create_new_spark_livy_session(), True
             r.raise_for_status()
             if r.json().get('state') in ['shutting_down', 'error', 'dead', 'success', 'not_started']:
                 # Refer: https://livy.incubator.apache.org/docs/latest/rest-api.html#session

@@ -1,65 +1,45 @@
 import json
 
 from celery import task
+from django.conf import settings
 
 from utils.kafka import Client
 
+
+def construct_tweet_payload(hashtag, tweet_data, user_mention):
+    return {
+        'tweet_text': tweet_data['tweet_text'].lower(),
+        'tweet_id': tweet_data['tweet_id'],
+        'tweet_user_id': tweet_data['tweet_user_id'],
+        'tweet_user_name': tweet_data['tweet_user_name'],
+        'tweet_hashtag': hashtag.lower(),
+        'tweet_usermention': user_mention.lower(),
+        'tweet_timestamp': int(tweet_data['tweet_timestamp'])
+    }
+
+
 @task
 def send_tweet_data_to_kafka(tweet_data):
-    Client().send_async(b'test', json.dumps(tweet_data).encode())
+    Client().send_async(settings.TWEET_DATA_KAFKA_QUEUE.encode(), json.dumps(tweet_data).encode())
 
 
 def replicate_tweet_data_for_hashtags_and_user_mentions(tweet_data: dict):
     tweet_data_list = []
 
     hashtags = tweet_data['tweet_hashtags'] or ''
-    user_mentions = tweet_data['tweet_usermentions'] or ''
+    user_mentions = tweet_data['tweet_usermentions']
 
     if hashtags != '':
         for hashtag in hashtags:
-            if user_mentions != '':
-                for user_mention in user_mentions:
-                    tweet_data_list.append({
-                        'tweet_text': tweet_data['tweet_text'],
-                        'tweet_id': tweet_data['tweet_id'],
-                        'tweet_user_id': tweet_data['tweet_user_id'],
-                        'tweet_user_name': tweet_data['tweet_user_name'],
-                        'tweet_hashtag': hashtag,
-                        'tweet_usermention': user_mention,
-                        'tweet_timestamp': tweet_data['tweet_timestamp']
-                    })
-            else:
-                tweet_data_list.append({
-                    'tweet_text': tweet_data['tweet_text'],
-                    'tweet_id': tweet_data['tweet_id'],
-                    'tweet_user_id': tweet_data['tweet_user_id'],
-                    'tweet_user_name': tweet_data['tweet_user_name'],
-                    'tweet_hashtag': hashtag,
-                    'tweet_usermention': '',
-                    'tweet_timestamp': tweet_data['tweet_timestamp']
-                })
-    else:
-        if user_mentions != '':
             for user_mention in user_mentions:
-                tweet_data_list.append({
-                    'tweet_text': tweet_data['tweet_text'],
-                    'tweet_id': tweet_data['tweet_id'],
-                    'tweet_user_id': tweet_data['tweet_user_id'],
-                    'tweet_user_name': tweet_data['tweet_user_name'],
-                    'tweet_hashtag': '',
-                    'tweet_usermention': user_mention,
-                    'tweet_timestamp': tweet_data['tweet_timestamp']
-                })
-        else:
-            tweet_data_list.append({
-                'tweet_text': tweet_data['tweet_text'],
-                'tweet_id': tweet_data['tweet_id'],
-                'tweet_user_id': tweet_data['tweet_user_id'],
-                'tweet_user_name': tweet_data['tweet_user_name'],
-                'tweet_hashtag': '',
-                'tweet_usermention': '',
-                'tweet_timestamp': tweet_data['tweet_timestamp']
-            })
+                if user_mention.lower() not in ['amazon', 'walmart', 'google']:
+                    continue
+                tweet_data_list.append(construct_tweet_payload(hashtag, tweet_data, user_mention))
+    else:
+        for user_mention in user_mentions:
+            if user_mention.lower() not in ['amazon', 'walmart', 'google']:
+                continue
+            tweet_data_list.append(construct_tweet_payload('', tweet_data, user_mention))
     return tweet_data_list
 
 
