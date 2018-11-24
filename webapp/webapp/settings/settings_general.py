@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     'twitter',
     'daemon',
     'spark',
-    'cassandra'
+    'tweet_cassandra'
 ]
 
 MIDDLEWARE = [
