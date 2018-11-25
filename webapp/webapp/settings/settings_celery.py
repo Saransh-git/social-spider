@@ -13,13 +13,13 @@ CELERY_WORKER_MAX_TASKS_PER_CHILD = 500
 CELERY_TASK_ROUTES = {
     # routes are followed in order
     'daemon.tasks.*': 'daemon',
-    re.compile(r'(spark|cassandra)\.tasks\..*'): 'dataeng',
+    re.compile(r'(spark|tweet_cassandra)\.tasks\..*'): 'dataeng',
     '*': 'default'
 }
 
 CELERY_BEAT_SCHEDULE = {
     'ingest-tweet-data-to-cassandra': {
-        'task': 'cassandra.tasks.push_tweet_data_to_kafka',
-        'schedule': crontab(minute='*/5')
+        'task': 'tweet_cassandra.tasks.push_tweet_data_to_cassandra',
+        'schedule': crontab(minute='*/2')
     }
 }

@@ -1,38 +1,54 @@
 import json
 import logging
-from celery import task
-from django.conf import settings
-from cassandra.cluster import Cluster
+
 from cassandra.auth import PlainTextAuthProvider
-
-from utils.kafka import Client as KafkaClient
-
+from cassandra.cluster import Cluster
+from celery import task, Task
+from celery.exceptions import SoftTimeLimitExceeded
+from django.conf import settings
+from kafka import KafkaConsumer
 
 logger = logging.getLogger(__name__)
 
 
-@task
-def push_tweet_data_to_kafka():
-    client = KafkaClient().client
-    topic = client.topics[settings.TWEET_DATA_KAFKA_QUEUE.encode()]
-    cons = topic.get_balanced_consumer(
-        consumer_group='cassandra_consumer', auto_commit_enable=True,
-        auto_commit_interval_ms=2 * 1000,
-        zookeeper_hosts=f'{settings.ZOOKEEPER_HOST}:{settings.ZOOKEEPER_PORT}'
+auth_provider = PlainTextAuthProvider(username=settings.CASSANDRA_USERNAME,
+                                          password=settings.CASSANDRA_PASSWORD)  # authentication
+
+
+class CusomTimeLimitMixinTask(Task):
+    soft_time_limit = 100
+    time_limit = 155
+
+
+@task(base=CusomTimeLimitMixinTask)
+def push_tweet_data_to_cassandra():
+    consumer = KafkaConsumer(
+        settings.TWEET_DATA_KAFKA_QUEUE, group_id='cassandra_f', auto_offset_reset='earliest',
+        consumer_timeout_ms=1000,
+        bootstrap_servers=[f'{settings.KAFKA_HOST}:{settings.KAFKA_PORT}']
     )
-    auth_provider = PlainTextAuthProvider(username=settings.CASSANDRA_USERNAME, password=settings.CASSANDRA_PASSWORD)
-    # authentication
-    with Cluster(settings.CASSANDRA_HOST, auth_provider=auth_provider) as cluster:  # instantiate cluster with argument
-        # as node of cassandra and authentication provider instance
-        session = cluster.connect("twitter_data")
-        while True:
-            msg = cons.consume(block=False)
-            if not msg:
-                break
-            value = json.loads(msg.value.decode())
-            if value['tweet_hashtag'] == '':
-                continue
+    with Cluster(settings.CASSANDRA_HOST, auth_provider=auth_provider, executor_threads=10) as cluster:
+        # node of cassandra and authentication provider instance
+        with cluster.connect("twitter_data") as session:
             try:
-                session.execute(f"insert into test_twitter_datatable json '{json.dumps(value)}';")
-            except Exception as e:
-                logger.error(e)
+                for msg in consumer:
+                    try:
+                        value = json.loads(msg.value.decode())
+                        if value['tweet_hashtag'] == '':
+                            continue
+                        value['tweet_text'] = value['tweet_text'].replace("\'", " ")
+                        value['tweet_text'] = value['tweet_text'].replace(",", " ")
+                        value['tweet_text'] = value['tweet_text'].replace("\"", " ")
+
+                        value['tweet_user_name'] = value['tweet_user_name'].replace("\'", " ")
+                        value['tweet_user_name'] = value['tweet_user_name'].replace(",", " ")
+                        value['tweet_user_name'] = value['tweet_user_name'].replace("\"", " ")
+                        session.execute(f"insert into test_usermention json '{json.dumps(value)}';")
+                    except SoftTimeLimitExceeded:
+                        raise
+                    except Exception as e:
+                        print(e)
+            except SoftTimeLimitExceeded:
+                pass
+            finally:
+                consumer.close()

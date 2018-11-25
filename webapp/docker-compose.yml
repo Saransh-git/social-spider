@@ -12,15 +12,15 @@ services:
   celeryworkerdefault:
     build:
       context: .
-    command: celery -A webapp worker -B -E -l info --concurrency=5 -Q default -E
+    command: celery -A webapp worker -B -E -l info --concurrency=5 -Q default -E -n default
   celeryworkerdaemon:
     build:
       context: .
-    command: celery -A webapp worker -B -E -l info --concurrency=2 -Q daemon -Ofair -E
+    command: celery -A webapp worker -B -E -l info --concurrency=2 -Q daemon -Ofair -E -n daemon
   celeryworkerdataeng:
     build:
       context: .
-    command: celery -A webapp worker -B -E -l info --concurrency=3 -Q dataeng -Ofair -E
+    command: celery -A webapp worker -B -E -l info --concurrency=3 -Q dataeng -Ofair -E -n dataeng
   flower:
     build:
       context: .
