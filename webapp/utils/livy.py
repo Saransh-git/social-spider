@@ -2,6 +2,7 @@ import json
 
 import requests
 from django.conf import settings
+from requests import HTTPError
 from rest_framework.status import HTTP_404_NOT_FOUND
 
 from utils.redis import rredis as redis
@@ -57,3 +58,29 @@ class LivyClient:
         statements_url = f'{session_url}/statements'
         r = requests.post(statements_url, data=json.dumps(statement_data), headers=self.headers)
         r.raise_for_status()
+
+    def delete_session(self, session_url):
+        requests.delete(session_url, headers=self.headers)
+
+    def fetch_livy_session_state(self, session_url):
+        r = requests.get(f'{session_url}/state', headers=self.headers)
+        r.raise_for_status()
+        return r.json().get('state')
+
+    def delete_current_session(self):
+        active_livy_session_id = redis.get('active_livy_session_id')
+        if not active_livy_session_id:
+            return
+        active_livy_session_id = active_livy_session_id.decode()
+        session_url = f'{settings.LIVY_HOST}:{settings.LIVY_PORT}/sessions/{active_livy_session_id}'
+        try:
+            state = self.fetch_livy_session_state(session_url)
+        except HTTPError as e:
+            if e.response.status_code == HTTP_404_NOT_FOUND:
+                redis.delete('active_livy_session_id')
+            else:
+                print(e)
+        else:
+            if state in ['idle', 'shutting_down', 'error', 'dead', 'success']:
+                self.delete_session(f'{settings.LIVY_HOST}:{settings.LIVY_PORT}/sessions/{active_livy_session_id}')
+                redis.delete('active_livy_session_id')
