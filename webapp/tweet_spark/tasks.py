@@ -16,7 +16,7 @@ from utils.livy import LivyClient
 @task(soft_time_limit=300, time_limit=550)
 def push_tweet_data_to_hadoop():
     consumer = KafkaConsumer(
-        settings.TWEET_DATA_KAFKA_QUEUE, group_id='push_data_to_hadoop', auto_offset_reset='earliest',
+        settings.TWEET_DATA_KAFKA_QUEUE, group_id='to_hadoop', auto_offset_reset='earliest',
         consumer_timeout_ms=1000,
         bootstrap_servers=[f'{settings.KAFKA_HOST}:{settings.KAFKA_PORT}']
     )
@@ -92,4 +92,4 @@ def post_data_to_spark_via_livy(tweet_datalist):
             livy_client.execute_statement_async(session_url, {'code': statement_data})
         except HTTPError as e:
             print(e)
-        clear_idle_livy_session.delay(countdown=3*60)  # attempt to clear this session after 3 minutes
+    clear_idle_livy_session.apply_async(countdown=3*60)  # attempt to clear this session after 3 minutes
