@@ -41,7 +41,7 @@ INSTALLED_APPS = [
 
     'twitter',
     'daemon',
-    'spark',
+    'tweet_spark',
     'tweet_cassandra'
 ]
 
