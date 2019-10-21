@@ -1,4 +1,4 @@
-Django==2.1.2
+Django==2.1.11
 django-filter==2.0.0
 djangorestframework==3.9.0
 pykafka==2.8.0
