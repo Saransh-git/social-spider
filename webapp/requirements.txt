@@ -4,36 +4,90 @@
 #
 #    pip-compile --output-file requirements.txt requirements.in
 #
-amqp==2.3.2               # via kombu
-babel==2.6.0              # via flower
-billiard==3.5.0.4         # via celery
+amqp==2.3.2
+    # via kombu
+babel==2.6.0
+    # via flower
+billiard==3.5.0.4
+    # via celery
 cassandra-driver==3.16.0
+    # via -r requirements.in
 celery==4.2.0
-certifi==2018.10.15       # via requests
-chardet==3.0.4            # via requests
-django-filter==2.0.0
+    # via
+    #   -r requirements.in
+    #   flower
+certifi==2018.10.15
+    # via requests
+chardet==3.0.4
+    # via requests
 django==2.1.2
+    # via
+    #   -r requirements.in
+    #   django-filter
+django-filter==2.0.0
+    # via -r requirements.in
 djangorestframework==3.9.0
+    # via -r requirements.in
 flower==0.9.2
-future==0.17.1            # via pyhive
-idna==2.7                 # via requests
-kazoo==2.5.0              # via pykafka
-kombu==4.2.1              # via celery
-numpy==1.15.4             # via pandas
+    # via -r requirements.in
+future==0.17.1
+    # via pyhive
+idna==2.7
+    # via requests
+kazoo==2.5.0
+    # via pykafka
+kombu==4.2.1
+    # via celery
+numpy==1.15.4
+    # via pandas
 pandas==0.23.4
-py4j==0.10.7              # via pyspark
+    # via -r requirements.in
+py4j==0.10.9.5
+    # via pyspark
 pyhive==0.6.1
+    # via -r requirements.in
 pykafka==2.8.0
-pyspark==2.4.0
-python-dateutil==2.7.5    # via pandas, pyhive
-pytz==2018.5              # via babel, celery, django, flower, pandas
+    # via -r requirements.in
+pyspark==3.2.2
+    # via -r requirements.in
+python-dateutil==2.7.5
+    # via
+    #   pandas
+    #   pyhive
+pytz==2018.5
+    # via
+    #   babel
+    #   celery
+    #   django
+    #   flower
+    #   pandas
 redis==2.10.6
+    # via -r requirements.in
 requests==2.20.0
+    # via -r requirements.in
 sasl==0.2.1
-six==1.11.0               # via cassandra-driver, kazoo, pykafka, python-dateutil, sasl, thrift
-tabulate==0.8.2           # via pykafka
-thrift-sasl==0.3.0
+    # via
+    #   -r requirements.in
+    #   thrift-sasl
+six==1.11.0
+    # via
+    #   cassandra-driver
+    #   kazoo
+    #   pykafka
+    #   python-dateutil
+    #   sasl
+    #   thrift
+tabulate==0.8.2
+    # via pykafka
 thrift==0.11.0
-tornado==5.1.1            # via flower
-urllib3==1.24.1           # via requests
-vine==1.1.4               # via amqp
+    # via
+    #   -r requirements.in
+    #   thrift-sasl
+thrift-sasl==0.3.0
+    # via -r requirements.in
+tornado==5.1.1
+    # via flower
+urllib3==1.24.1
+    # via requests
+vine==1.1.4
+    # via amqp
